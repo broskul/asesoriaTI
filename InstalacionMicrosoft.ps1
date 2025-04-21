@@ -1,3 +1,6 @@
+#permisos primero
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+
 # Solicitar datos al usuario
 $correo = Read-Host "Ingresa tu cuenta Microsoft profesional (ej: nombre@empresa.com)"
 $nombrePerfil = ($correo.Split("@")[0]) + "_MS"
