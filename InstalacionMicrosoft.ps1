@@ -14,7 +14,7 @@ if (-not (Test-Path $perfilPath)) {
 
 # Abrir Edge con el perfil al login de Microsoft
 Write-Host "`n🌐 Abriendo navegador para iniciar sesión..."
-Start-Process "msedge.exe" "--user-data-dir=""$perfilPath"" --profile-directory=""Default"" $urlLogin"
+Start-Process "msedge.exe" "--user-data-dir=""$perfilPath"" $urlLogin"
 Start-Sleep -Seconds 5
 
 # Iniciar OneDrive
