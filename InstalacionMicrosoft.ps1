@@ -8,12 +8,13 @@ $urlLogin = "https://login.microsoftonline.com/"
 if (-not (Test-Path $perfilPath)) {
     Write-Host "Creando perfil Edge: $nombrePerfil"
     New-Item -ItemType Directory -Path $perfilPath | Out-Null
-} else {
+}
+else {
     Write-Host "El perfil $nombrePerfil ya existe."
 }
 
 # Abrir Edge con el perfil al login de Microsoft
-Write-Host "`nAbriendo navegador para iniciar sesión..."
+Write-Host "`nAbriendo navegador para iniciar sesion..."
 Start-Process "msedge.exe" "--user-data-dir=`"$perfilPath`" $urlLogin"
 Start-Sleep -Seconds 5
 
@@ -28,5 +29,5 @@ Start-Process "winword.exe"
 Start-Sleep -Seconds 5
 
 # Mensaje final
-Write-Host "`nListo. Usa el mismo pase temporal para iniciar sesión en todas las ventanas si lo solicita."
-Write-Host "Este perfil quedará guardado como: $nombrePerfil"
+Write-Host "`nListo. Usa el mismo pase temporal para iniciar sesion en todas las ventanas si lo solicita."
+Write-Host "Este perfil quedara guardado como: $nombrePerfil"
