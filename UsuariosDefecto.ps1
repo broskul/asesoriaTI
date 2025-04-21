@@ -36,6 +36,21 @@ if (-not (Get-LocalUser -Name $adminTIUser -ErrorAction SilentlyContinue)) {
 }
 
 # -----------------------
+# Asegurar que los usuarios estén activos
+# -----------------------
+
+Write-Output "`nActivando usuarios locales para permitir inicio de sesión..."
+
+# Activar usuario principal
+net user "$empresa" /active:yes
+
+# Activar usuario Administrador TI
+net user "Administrador TI" /active:yes
+
+# Forzar creación del perfil de usuario ejecutando una consola con su sesión (esto crea la carpeta en C:\Users)
+Start-Process -FilePath "cmd.exe" -Credential (New-Object System.Management.Automation.PSCredential("$env:COMPUTERNAME\$empresa", $passEmpresa)) -ArgumentList "/c exit"
+
+# -----------------------
 # Marcar OOBE como completo
 # -----------------------
 
