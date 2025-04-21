@@ -34,3 +34,23 @@ if (-not (Get-LocalUser -Name $adminTIUser -ErrorAction SilentlyContinue)) {
 } else {
     Write-Output "`nEl usuario $adminTIUser ya existe."
 }
+
+# -----------------------
+# Marcar OOBE como completo
+# -----------------------
+
+# Ruta: HKEY_LOCAL_MACHINE\SYSTEM\Setup
+Set-ItemProperty -Path "HKLM:\SYSTEM\Setup" -Name "CmdLine" -Value ""
+Set-ItemProperty -Path "HKLM:\SYSTEM\Setup" -Name "OOBEInProgress" -Value 0
+Set-ItemProperty -Path "HKLM:\SYSTEM\Setup" -Name "SetupPhase" -Value 0
+Set-ItemProperty -Path "HKLM:\SYSTEM\Setup" -Name "SetupType" -Value 0
+Set-ItemProperty -Path "HKLM:\SYSTEM\Setup" -Name "SystemSetupInProgress" -Value 0
+
+# Ruta: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State
+$setupStatePath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
+if (-not (Test-Path $setupStatePath)) {
+    New-Item -Path $setupStatePath -Force | Out-Null
+}
+Set-ItemProperty -Path $setupStatePath -Name "ImageState" -Value "IMAGE_STATE_COMPLETE"
+
+Write-Output "`nOOBE marcado como completado correctamente."
