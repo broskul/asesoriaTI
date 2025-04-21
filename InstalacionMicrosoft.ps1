@@ -29,4 +29,4 @@ Start-Sleep -Seconds 5
 
 # Mensaje final
 Write-Host "`n✅ Listo. Usa el mismo pase temporal para iniciar sesión en todas las ventanas si lo solicita."
-Write-Host "   Este perfil quedará guardado como: $nombrePerfil"
+Write-Host "Este perfil quedará guardado como:"" $nombrePerfil""
