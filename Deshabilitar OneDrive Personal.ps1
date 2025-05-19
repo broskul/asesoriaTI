@@ -1,28 +1,52 @@
-@echo off
-setlocal
+# Ejecutar como administrador
 
-:: Descargar script PowerShell
-echo Descargando script para deshabilitar OneDrive Personal...
-curl -L "https://raw.githubusercontent.com/broskul/asesoriaTI/main/Quitar%20OneDrive%20Personal.ps1" -o "%TEMP%\QuitarOneDrivePersonal.ps1"
+# 1. Crear clave de política si no existe
+New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft" -Name "OneDrive" -Force | Out-Null
 
-:: Ejecutar el script con privilegios de administrador
-echo Aplicando la configuración...
-powershell -Command ^
- "Start-Process powershell -ArgumentList '-ExecutionPolicy Bypass -File \"%TEMP%\QuitarOneDrivePersonal.ps1\"' -Verb RunAs -Wait"
+# 2. Aplicar política para bloquear cuentas personales
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Name "DisablePersonalSync" -Type DWord -Value 1
 
-:: Verificar si la política está activa
-echo Verificando configuración aplicada...
-powershell -Command ^
- "$value = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name 'DisablePersonalSync' -ErrorAction SilentlyContinue; ^
-  if ($value.DisablePersonalSync -eq 1) { ^
-     Write-Host '✅ Política aplicada correctamente. Reiniciando OneDrive...' -ForegroundColor Green; ^
-     Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue; ^
-     Start-Sleep -Seconds 2; ^
-     Start-Process '$env:LOCALAPPDATA\Microsoft\OneDrive\OneDrive.exe'; ^
-     [System.Windows.Forms.MessageBox]::Show('La política fue aplicada correctamente. OneDrive Personal ha sido deshabilitado y el servicio reiniciado.','Finalizado') ^
-  } else { ^
-     [System.Windows.Forms.MessageBox]::Show('⚠️ La política no se aplicó correctamente. Verificar permisos o ejecutar nuevamente como administrador.','Error') ^
-  }" -STA
+# 3. Verificar si se aplicó correctamente
+$politicaAplicada = $false
+try {
+    $valor = Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Name "DisablePersonalSync" -ErrorAction Stop
+    if ($valor.DisablePersonalSync -eq 1) {
+        $politicaAplicada = $true
+    }
+} catch {
+    $politicaAplicada = $false
+}
 
-endlocal
-pause
+# 4. Reiniciar OneDrive
+Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
+Start-Process "$env:LOCALAPPDATA\Microsoft\OneDrive\OneDrive.exe"
+
+# 5. Mostrar mensaje al usuario
+Add-Type -AssemblyName System.Windows.Forms
+
+if ($politicaAplicada) {
+    [System.Windows.Forms.MessageBox]::Show("✅ OneDrive Personal ha sido deshabilitado correctamente. La aplicación se reinició.","Proceso completado")
+    $resultado = "Exitoso"
+} else {
+    [System.Windows.Forms.MessageBox]::Show("⚠️ No se pudo confirmar que la política fue aplicada. Verifica permisos de administrador.","Proceso con problemas")
+    $resultado = "Sin Éxito"
+}
+
+# 6. Enviar notificación a Wix para registrar en SharePoint
+$payload = @{
+    nombreScript = "Deshabilitar OneDrive Personal"
+    equipo = $env:COMPUTERNAME
+    usuario = $env:USERNAME
+    fecha = (Get-Date).ToString("s")
+    resultado = $resultado
+} | ConvertTo-Json -Depth 3
+
+try {
+    Invoke-RestMethod -Method POST `
+                      -Uri "https://www.plusmedicalchile.cl/_functions" `
+                      -Body $payload `
+                      -ContentType "application/json"
+} catch {
+    Write-Host "❌ No se pudo enviar la notificación a Wix: $($_.Exception.Message)" -ForegroundColor Red
+}
