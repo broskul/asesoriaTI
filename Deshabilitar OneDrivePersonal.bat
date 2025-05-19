@@ -44,7 +44,7 @@ $payload = @{
 
 try {
     Invoke-RestMethod -Method POST `
-                      -Uri "https://www.plusmedicalchile.cl/_functions" `
+                      -Uri "https://www.plusmedicalchile.cl/_functions/ejecutarScript" `
                       -Body $payload `
                       -ContentType "application/json"
 } catch {
