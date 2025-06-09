@@ -25,7 +25,7 @@ if (-not (Get-LocalUser -Name $empresa -ErrorAction SilentlyContinue)) {
 
 # Crear el usuario Administrador TI (solo si no existe)
 $adminTIUser = "Administrador TI"
-$adminTIPassword = ConvertTo-SecureString "Plu`$medical2023" -AsPlainText -Force
+$adminTIPassword = ConvertTo-SecureString "Plusmedic@l2023" -AsPlainText -Force
 
 if (-not (Get-LocalUser -Name $adminTIUser -ErrorAction SilentlyContinue)) {
     New-LocalUser -Name $adminTIUser -Password $adminTIPassword -FullName "Administrador TI" -Description "Cuenta de administración técnica" -PasswordNeverExpires:$true
