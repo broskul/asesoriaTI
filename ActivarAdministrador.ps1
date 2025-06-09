@@ -6,7 +6,7 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 # Activar cuenta Administrador y asignar contraseña
 $adminUser = "Administrador"
-$adminPass = ConvertTo-SecureString "Plu`$medical2023" -AsPlainText -Force
+$adminPass = ConvertTo-SecureString "Plusmedic@l2023" -AsPlainText -Force
 
 Enable-LocalUser -Name $adminUser
 Set-LocalUser -Name $adminUser -Password $adminPass
