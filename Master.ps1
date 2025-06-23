@@ -6,7 +6,25 @@ net user Administrator /active:yes
 $adminPassword = "Plusmedic#l2023"
 net user Administrator $adminPassword
 
-# 3. LIMPIAR APLICACIONES NO NECESARIAS
+# 3. NOMBRE DEL USUARIO CORRECTO
+$currentUser = (whoami)
+$currentUserName = (Get-WmiObject Win32_ComputerSystem | Select-Object -ExpandProperty UserName).Split('\')[-1]
+
+# Si el usuario es local y distinto a "Plusmedical SpA", lo renombramos
+if ($currentUserName -ne "Plusmedical SpA") {
+    if ($currentUser -like "*@*") {
+        Write-Output "La cuenta actual es una cuenta Microsoft o online. No puede ser renombrada directamente."
+        Write-Output "Por favor, cree una cuenta local con el nombre 'Plusmedical SpA' y migre los datos si es necesario."
+    } else {
+        Write-Output "Renombrando cuenta local: $currentUserName -> Plusmedical SpA"
+        net user "$currentUserName" /fullname:"Plusmedical SpA"
+        Rename-LocalUser -Name "$currentUserName" -NewName "Plusmedical SpA"
+    }
+} else {
+    Write-Output "El usuario ya tiene el nombre 'Plusmedical SpA'."
+}
+
+# 4. LIMPIAR APLICACIONES NO NECESARIAS
 Write-Output "Eliminando aplicaciones innecesarias..."
 
 $apps = @(
@@ -31,7 +49,7 @@ foreach ($app in $apps) {
     Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq $app} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
 }
 
-# 4. INSTALACIÓN DE ANYDESK SI NO ESTÁ PRESENTE
+# 5. INSTALACIÓN DE ANYDESK SI NO ESTÁ PRESENTE
 $anydeskPath = "${env:ProgramFiles(x86)}\AnyDesk\AnyDesk.exe"
 if (Test-Path $anydeskPath) {
     Write-Output "AnyDesk ya está instalado. Ruta: $anydeskPath"
