@@ -1,27 +1,37 @@
-# 1. ACTIVAR CUENTA ADMINISTRADOR LOCAL
-Write-Output "Activando cuenta de Administrador..."
-net user Administrator /active:yes
+# 1. DETECTAR NOMBRE DE CUENTA DE ADMINISTRADOR INTEGRADO (Administrator o Administrador)
+$adminAccount = Get-WmiObject Win32_UserAccount | Where-Object { $_.SID -like "*-500" } | Select-Object -ExpandProperty Name
 
-# 2. ASIGNAR CONTRASEÑA SEGURA
+Write-Output "Activando cuenta de Administrador: $adminAccount"
+net user "$adminAccount" /active:yes
+
+# 2. ASIGNAR CONTRASEÑA SEGURA A LA CUENTA DE ADMINISTRADOR
 $adminPassword = "Plusmedic#l2023"
-net user Administrator $adminPassword
+Write-Output "Asignando contraseña al usuario '$adminAccount'..."
+net user "$adminAccount" $adminPassword
 
-# 3. NOMBRE DEL USUARIO CORRECTO
+# 3. OBTENER NOMBRE DEL USUARIO ACTUAL
 $currentUser = (whoami)
 $currentUserName = (Get-WmiObject Win32_ComputerSystem | Select-Object -ExpandProperty UserName).Split('\')[-1]
 
-# Si el usuario es local y distinto a "Plusmedical SpA", lo renombramos
+# 4. VERIFICAR Y RENOMBRAR USUARIO LOCAL SI ES NECESARIO
 if ($currentUserName -ne "Plusmedical SpA") {
     if ($currentUser -like "*@*") {
-        Write-Output "La cuenta actual es una cuenta Microsoft o online. No puede ser renombrada directamente."
+        Write-Output "La cuenta actual es una cuenta Microsoft u online. No puede ser renombrada directamente."
         Write-Output "Por favor, cree una cuenta local con el nombre 'Plusmedical SpA' y migre los datos si es necesario."
     } else {
         Write-Output "Renombrando cuenta local: $currentUserName -> Plusmedical SpA"
         net user "$currentUserName" /fullname:"Plusmedical SpA"
         Rename-LocalUser -Name "$currentUserName" -NewName "Plusmedical SpA"
+        
+        # 5. CAMBIAR CONTRASEÑA DE LA NUEVA CUENTA RENOMBRADA
+        $userPassword = "Plusm3dic#l"
+        Write-Output "Asignando contraseña por defecto a 'Plusmedical SpA'..."
+        net user "Plusmedical SpA" $userPassword
     }
 } else {
-    Write-Output "El usuario ya tiene el nombre 'Plusmedical SpA'."
+    Write-Output "El usuario ya se llama 'Plusmedical SpA'. Asignando contraseña por defecto..."
+    $userPassword = "Plusm3dic#l"
+    net user "Plusmedical SpA" $userPassword
 }
 
 # 4. LIMPIAR APLICACIONES NO NECESARIAS
