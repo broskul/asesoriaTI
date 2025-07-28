@@ -1,5 +1,4 @@
-#Obtener información de equipo
-
+# Obtener información de equipo
 Add-Type -AssemblyName System.Windows.Forms
 
 # Obtener nombre del equipo
@@ -17,7 +16,6 @@ $ramSoldada = $modulos | Where-Object {
 }
 
 if ($ramSoldada.Count -eq $modulos.Count) {
-    # Consolidar como RAM soldada
     $ram = @(
         @{
             RAM1 = @{
@@ -30,7 +28,6 @@ if ($ramSoldada.Count -eq $modulos.Count) {
         }
     )
 } else {
-    # RAM tradicional por módulo (expandible)
     $i = 1
     $ram = @()
     foreach ($modulo in $modulos) {
@@ -95,4 +92,9 @@ $json = $inventario | ConvertTo-Json -Depth 4
 # Copiar al portapapeles
 [System.Windows.Forms.Clipboard]::SetText($json)
 
-Write-Output "JSON copiado al portapapeles correctamente."
+# Guardar en el escritorio
+$escritorio = [Environment]::GetFolderPath('Desktop')
+$rutaArchivo = Join-Path $escritorio "MisDatos.txt"
+$json | Out-File -FilePath $rutaArchivo -Encoding UTF8
+
+Write-Output "JSON copiado al portapapeles y guardado como 'MisDatos.txt' en el escritorio."
