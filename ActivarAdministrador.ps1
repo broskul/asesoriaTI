@@ -4,11 +4,15 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     exit
 }
 
-# Activar cuenta Administrador y asignar contraseña
-$adminUser = "Administrador"
-$adminPass = ConvertTo-SecureString "Plusmedic@l2023" -AsPlainText -Force
+# 1. DETECTAR NOMBRE DE CUENTA DE ADMINISTRADOR INTEGRADO (Administrator o Administrador)
+$adminAccount = Get-WmiObject Win32_UserAccount | Where-Object { $_.SID -like "*-500" } | Select-Object -ExpandProperty Name
 
-Enable-LocalUser -Name $adminUser
-Set-LocalUser -Name $adminUser -Password $adminPass
+Write-Output "Activando cuenta de Administrador: $adminAccount"
+net user "$adminAccount" /active:yes
 
-Write-Output "`n✅ Cuenta 'Administrador' activada con clave Plu$medical2023"
+# 2. ASIGNAR CONTRASEÑA SEGURA A LA CUENTA DE ADMINISTRADOR
+$adminPassword = "Plusmedic#l2023"
+Write-Output "Asignando contraseña al usuario '$adminAccount'..."
+net user "$adminAccount" $adminPassword
+
+Write-Output "`n✅ Cuenta 'Administrador' activada
